@@ -13,12 +13,13 @@ coverage/
 # agent workspace
 .freebuff/
 
-# source repo clone (ใช้พัฒนาชั่วคราว)
-monster-speller-src/
 
 
 # editor / os
 .vscode/*
+
+# source repo clone (ใช้พัฒนาชั่วคราว)
+monster-speller-src/
 !.vscode/extensions.json
 .idea/
 .DS_Store
