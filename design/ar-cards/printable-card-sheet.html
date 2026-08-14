@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MONSTER SPELLER — การ์ด AR (พิมพ์)</title>
+<style>
+  /* ===== ตั้งค่าการพิมพ์: A4, ขนาดจริง 100% ===== */
+  @page { size: A4 portrait; margin: 8mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Sarabun", "Leelawadee UI", Tahoma, sans-serif; background: #f4f4f6; padding: 16px; }
+
+  .sheet { width: 194mm; margin: 0 auto; }
+  .card {
+    width: 148mm; height: 210mm;
+    background: #ffffff; border: 1px dashed #b0b0b8;
+    border-radius: 6mm; overflow: hidden;
+    margin: 0 auto 12mm auto; page-break-after: always;
+    display: flex; flex-direction: column; position: relative;
+  }
+  .card:last-child { page-break-after: auto; }
+
+  /* แถบสีมาตรา */
+  .matra-strip { height: 5mm; width: 100%; }
+
+  .card-body { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8mm 10mm 6mm; text-align: center; }
+
+  /* โซนมาร์กเกอร์ 80×80 มม. */
+  .marker-zone {
+    width: 80mm; height: 80mm;
+    border: 2px dashed #c4c4cc; border-radius: 3mm;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff;
+  }
+  .marker-zone img { width: 70mm; height: 70mm; image-rendering: pixelated; }
+  .marker-placeholder { color: #8a8a94; font-size: 11px; padding: 4mm; }
+  .marker-placeholder strong { display: block; font-size: 14px; color: #555; }
+
+  .monster { font-size: 40px; margin-top: 4mm; }
+  .monster-name { font-size: 20px; font-weight: bold; margin-top: 1mm; }
+  .matra-name { font-size: 34px; font-weight: bold; margin-top: 1mm; }
+  .matra-name small { font-size: 16px; font-weight: normal; display: block; }
+
+  .words { margin-top: 5mm; font-size: 15px; line-height: 1.7; width: 100%; }
+  .words .row { display: flex; justify-content: center; gap: 4mm; flex-wrap: wrap; }
+  .words .direct { color: #111; }
+  .words .irregular { color: #b45309; font-weight: bold; }
+  .words .label { font-size: 12px; color: #666; margin-right: 1mm; }
+
+  .howto { margin-top: auto; font-size: 13px; color: #333; background: #f0f4ff; border-radius: 4mm; padding: 2.5mm 5mm; width: 100%; }
+  .logo { margin-top: 2mm; font-size: 10px; color: #777; letter-spacing: 1px; }
+
+  .sheet-info { max-width: 194mm; margin: 0 auto 10mm; background: #fffbe6; border: 1px solid #e6c96b; border-radius: 4mm; padding: 5mm 7mm; font-size: 13px; line-height: 1.6; color: #555; }
+  .sheet-info h2 { font-size: 16px; color: #333; margin-bottom: 2mm; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .sheet-info { display: none; }
+    .card { margin: 0; border: none; border-radius: 0; page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet-info">
+  <h2>🖨️ วิธีพิมพ์ (อ่านก่อนพิมพ์ — ตามสเปก `ar-cards-spec.md` ข้อ 5)</h2>
+  <ol>
+    <li>วางไฟล์มาร์กเกอร์จริง <code>markers/marker-0.png … marker-7.png</code> ลงโฟลเดอร์ <code>markers/</code> (สร้างด้วย <code>generate-markers.py</code> หรือ AR.js Marker Generator) แล้วเปิดไฟล์นี้ — ถ้ายังไม่มี จะเห็นกรอบประแทน</li>
+    <li>พิมพ์ที่ขนาด <strong>100% / ขนาดจริง</strong> บนกระดาษ A4 (120–160 gsm) — <strong>ห้าม</strong> fit-to-page / ย่อขยาย / borderless</li>
+    <li>ตรวจว่ามาร์กเกอร์พิมพ์ได้ขนาด 80×80 มม. พอดี → ตัดตามเส้นประ → เคลือบด้าน (matte) ตามสเปก</li>
+    <li>ตรวจ QA ตามเช็กลิสต์ท้ายสเปก (สแกนครบ 8 ID, แสง 300+ lux, ระยะ 20–80 ซม.)</li>
+  </ol>
+</div>
+
+<div class="sheet" id="sheet"></div>
+
+<script>
+  // ===== ข้อมูลการ์ด 8 แบบ (ID = มาร์กเกอร์ AR.js barcode) =====
+  // สีแถบ = สีประจำมาตรา (โทนเข้มขึ้นเพื่อการพิมพ์บนพื้นขาว)
+  const CARDS = [
+    { id: 0, matra: "แม่กา",   monster: "กายักษ์",  emoji: "👾", color: "#0E7490", direct: "ตา · มา · นา · ฟ้า", irregular: null },
+    { id: 1, matra: "แม่กก",   monster: "ก็อบลินกก", emoji: "👹", color: "#15803D", direct: "มาก · เด็ก · จัก",   irregular: "สุข · โรค · เมฆ" },
+    { id: 2, matra: "แม่กด",   monster: "ดราก้อนด", emoji: "🐉", color: "#BE185D", direct: "วัด · บิด · อาด",     irregular: "ชาติ · โอกาส · ปราสาท · วิเศษ" },
+    { id: 3, matra: "แม่กบ",   monster: "กบยักษ์",  emoji: "🐸", color: "#B45309", direct: "กบ · ลาบ",           irregular: "บาป · ภาพ · โลภ · กราฟ" },
+    { id: 4, matra: "แม่กน",   monster: "นกยักษ์",  emoji: "🦅", color: "#6D28D9", direct: "บ้าน · ทาน · ดิน",    irregular: "ผล · การ · จันทร์ · กาฬ" },
+    { id: 5, matra: "แม่กม",   monster: "หมีม",     emoji: "🐻", color: "#0F766E", direct: "ลม · ความ",          irregular: null },
+    { id: 6, matra: "แม่เกย",  monster: "มังกรเกย", emoji: "🐲", color: "#B91C1C", direct: "ไทย · ยาย · รวย",    irregular: null },
+    { id: 7, matra: "แม่เกอว", monster: "วาฬเกอว",  emoji: "🐳", color: "#7C2D12", direct: "ขาว · แมว · หาว",    irregular: null }
+  ];
+
+  const sheet = document.getElementById("sheet");
+
+  CARDS.forEach((c) => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    // แถบสีมาตรา
+    const strip = document.createElement("div");
+    strip.className = "matra-strip";
+    strip.style.background = c.color;
+    card.appendChild(strip);
+
+    const body = document.createElement("div");
+    body.className = "card-body";
+
+    // โซนมาร์กเกอร์ (โหลด markers/marker-{id}.png — ถ้าไม่มีแสดงกรอบประ)
+    const zone = document.createElement("div");
+    zone.className = "marker-zone";
+    const img = document.createElement("img");
+    img.alt = `มาร์กเกอร์ AR ID ${c.id}`;
+    img.src = `markers/marker-${c.id}.png`;
+    img.onerror = () => {
+      zone.innerHTML = `<div class="marker-placeholder"><strong>วาง marker-${c.id}.png ที่นี่</strong>80×80 มม.<br>สร้างด้วย generate-markers.py<br>หรือ AR.js Marker Generator (barcode 6×6, ID ${c.id})</div>`;
+    };
+    zone.appendChild(img);
+    body.appendChild(zone);
+
+    // มอนสเตอร์ + มาตรา
+    const monster = document.createElement("div");
+    monster.className = "monster";
+    monster.textContent = c.emoji;
+    body.appendChild(monster);
+
+    const mName = document.createElement("div");
+    mName.className = "monster-name";
+    mName.textContent = c.monster;
+    body.appendChild(mName);
+
+    const matra = document.createElement("div");
+    matra.className = "matra-name";
+    matra.style.color = c.color;
+    matra.innerHTML = `${c.matra}<small>กระสุนแป้น ${c.id === 0 ? 1 : c.id + 1} · ID ${c.id}</small>`;
+    body.appendChild(matra);
+
+    // คำตัวอย่าง
+    const words = document.createElement("div");
+    words.className = "words";
+    const dir = `<div class="row"><span class="label">ตรงมาตรา:</span><span class="direct">${c.direct}</span></div>`;
+    const irr = c.irregular ? `<div class="row"><span class="label">ไม่ตรงมาตรา:</span><span class="irregular">${c.irregular}</span></div>` : `<div class="row"><span class="label">ไม่มีตัวสะกด</span></div>`;
+    words.innerHTML = dir + irr;
+    body.appendChild(words);
+
+    // วิธีใช้ + โลโก้
+    const howto = document.createElement("div");
+    howto.className = "howto";
+    howto.textContent = "📱 สแกนการ์ด → ยิงกระสุนมาตราให้ถูก → มอนสเตอร์กลายเป็นมิตร!";
+    body.appendChild(howto);
+
+    const logo = document.createElement("div");
+    logo.className = "logo";
+    logo.textContent = "MONSTER SPELLER · กองกำลังพิทักษ์ตัวสะกด";
+    body.appendChild(logo);
+
+    card.appendChild(body);
+    sheet.appendChild(card);
+  });
+</script>
+</body>
+</html>

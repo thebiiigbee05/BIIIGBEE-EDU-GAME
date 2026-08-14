@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <!-- มงกุฎ -->
+  <path d="M44 30 l6 -16 8 10 6 -12 8 12 6 -10 6 16 z" fill="#ffd700" stroke="#ffd700" stroke-width="2" filter="url(#glow)"/>
+  <!-- ลำตัวใหญ่ -->
+  <ellipse cx="64" cy="72" rx="38" ry="34" fill="#0b0f2a" stroke="#ff3b3b" stroke-width="4" filter="url(#glow)"/>
+  <!-- แขน -->
+  <rect x="18" y="62" width="14" height="22" rx="6" fill="#0b0f2a" stroke="#ff3b3b" stroke-width="3"/>
+  <rect x="96" y="62" width="14" height="22" rx="6" fill="#0b0f2a" stroke="#ff3b3b" stroke-width="3"/>
+  <!-- คิ้วขึง -->
+  <line x1="40" y1="58" x2="56" y2="64" stroke="#ff3b3b" stroke-width="4" stroke-linecap="round"/>
+  <line x1="88" y1="58" x2="72" y2="64" stroke="#ff3b3b" stroke-width="4" stroke-linecap="round"/>
+  <!-- ตา -->
+  <circle cx="50" cy="72" r="9" fill="#ffffff"/>
+  <circle cx="78" cy="72" r="9" fill="#ffffff"/>
+  <circle cx="52" cy="74" r="4" fill="#ff3b3b"/>
+  <circle cx="80" cy="74" r="4" fill="#ff3b3b"/>
+  <!-- ปากมีฟัน -->
+  <path d="M46 92 q18 12 36 0" fill="none" stroke="#ff3b3b" stroke-width="3" stroke-linecap="round"/>
+  <path d="M58 96 l4 -8 4 8 M66 97 l4 -8 4 8" fill="none" stroke="#ff3b3b" stroke-width="2"/>
+</svg>
